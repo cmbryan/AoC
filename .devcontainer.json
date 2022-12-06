@@ -1,6 +1,9 @@
 {
-    "name": "AoC22",
+	"name": "AoC22",
 	"image": "python:3.11-bullseye",
+	"runArgs": [
+		"--net", "host"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
