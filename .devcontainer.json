@@ -1,0 +1,16 @@
+{
+    "name": "AoC22",
+	"image": "python:3.11-bullseye",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"VisualStudioExptTeam.vscodeintellicode",
+				"almenon.arepl",
+				"njqdev.vscode-python-typehint",
+				"Mukundan.python-docs",
+				"graykode.ai-docstring"
+			]
+		}
+	}
+}
