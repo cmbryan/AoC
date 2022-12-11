@@ -13,16 +13,25 @@ class Elt:
         self.parent_dir = None
         self.child_dirs = []
 
-    def add_child(self, child):
+    def add_or_get_child(self, child_name, size=0):
+        for child in self.child_dirs:
+            if child.name == child_name:
+                assert child.size == size
+                return child
+        child = Elt(child_name, size=size)
         child.parent_dir = self
         self.child_dirs.append(child)
         self.__propagate(child.size)
+        return child
 
     def get_total_under(self, max_size):
-        result = 0 if self.size > max_size else self.size
+        collection = set()
         for child in self.child_dirs:
-            result += child.get_total_under(max_size)
-        return result
+            collection = collection.union(child.get_total_under(max_size))
+        if self.child_dirs and self.size <= max_size:
+            collection.add(self.size)
+        return collection
+
 
     def __propagate(self, size):
         self.size += size
@@ -40,7 +49,7 @@ def solution(path, max_size):
         cur_dir = None
         for line in fh.readlines():
             # print(f"1=> {cur_dir}")
-            print(f"2=> {line.strip()}")
+            # print(f"2=> {line.strip()}")
             # print("")
             words = [word.strip() for word in line.split(" ")]
             if words[0] == "$":
@@ -55,9 +64,7 @@ def solution(path, max_size):
                         cur_dir = cur_dir.parent_dir
                         assert cur_dir
                     else:
-                        new_dir = Elt(words[2])
-                        cur_dir.add_child(new_dir)
-                        cur_dir = new_dir
+                        cur_dir = cur_dir.add_or_get_child(words[2])
                     mode = None  # defensive
                 continue
 
@@ -65,16 +72,14 @@ def solution(path, max_size):
                 if words[0] == "dir":
                     pass  # don't need this information
                 else:
-                    new_file = Elt(words[1], size=int(words[0]))
-                    cur_dir.add_child(new_file)  # don't need the filename
+                    cur_dir.add_or_get_child(words[1], size=int(words[0]))
             else:
                 assert False  # defensive
 
     # get to /
     while cur_dir.parent_dir:
         cur_dir = cur_dir.parent_dir
-    breakpoint()
-    return cur_dir.get_total_under(max_size)
+    return sum(cur_dir.get_total_under(max_size))
 
 
 max_size = 100000
@@ -82,4 +87,4 @@ max_size = 100000
 _t = solution("sample.txt", max_size)
 assert _t == 95437, _t
 print("Ok")
-print(solution("input.txt"), max_size)
+print(solution("input.txt", max_size))
