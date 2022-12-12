@@ -4,8 +4,6 @@
 import itertools
 import os
 
-g_max_size: int = 100000
-
 
 class FileElt:
     """Directory or file"""
@@ -30,10 +28,12 @@ class FileElt:
         return bool(self.children)
 
     def __iter__(self):
-        for child in self.children:
-            for gc in child:
-                yield gc
-            self.size += child.size
+        if self.children:
+            self.size = 0
+            for child in self.children:
+                for gc in child:
+                    yield gc
+                self.size += child.size
         yield self
 
     def __repr__(self) -> str:
@@ -78,12 +78,26 @@ def solution(path, max_size):
     while cur_dir.parent_dir:
         cur_dir = cur_dir.parent_dir
 
-    return sum(map(lambda elt: elt.size, filter(lambda elt: elt.is_dir() and elt.size <= g_max_size, cur_dir)))
+    solution_sum = sum(map(lambda elt: elt.size, filter(lambda elt: elt.is_dir() and elt.size <= max_size, cur_dir)))
+
+    tot_disk_size = 70000000
+    tgt_min_unused = 30000000
+    current_free = tot_disk_size -cur_dir.size
+    free_at_least = tgt_min_unused - current_free
+    print(free_at_least)
+    # solution_delete_this = min(map(lambda elt: elt.size, filter(lambda elt: elt.is_dir() and elt.size >= free_at_least, cur_dir)))
+    solution_delete_this = min(map(lambda elt: elt.size, filter(lambda elt: elt.is_dir() and elt.size >= free_at_least, cur_dir)))
+
+    return solution_sum, solution_delete_this
 
 
-_t = solution("sample.txt", g_max_size)
-assert _t == 95437, _t
+max_size: int = 100000
+
+_t = solution("sample.txt", max_size)
+assert _t[0] == 95437, _t[0]
+assert _t[1] == 24933642, _t[1]
 print("Ok")
-_t = solution("input.txt", g_max_size)
-assert _t == 1886043, _t
-print(_t)
+
+_t = solution("input.txt", max_size)
+assert _t[0] == 1886043, _t[0]
+print(f"Part 1: {_t[0]}, part 2: {_t[1]}")
