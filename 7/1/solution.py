@@ -1,63 +1,61 @@
 # State machine!
 
 
+import itertools
 import os
 
+g_max_size: int = 100000
 
-class Elt:
+
+class FileElt:
     """Directory or file"""
 
     def __init__(self, name, size=0):
         self.name = name
         self.size = size
         self.parent_dir = None
-        self.child_dirs = []
+        self.children = []
 
     def add_or_get_child(self, child_name, size=0):
-        for child in self.child_dirs:
+        for child in self.children:
             if child.name == child_name:
                 assert child.size == size
                 return child
-        child = Elt(child_name, size=size)
+        child = FileElt(child_name, size=size)
         child.parent_dir = self
-        self.child_dirs.append(child)
-        self.__propagate(child.size)
+        self.children.append(child)
         return child
 
-    def get_total_under(self, max_size):
-        collection = set()
-        for child in self.child_dirs:
-            collection = collection.union(child.get_total_under(max_size))
-        if self.child_dirs and self.size <= max_size:
-            collection.add(self.size)
-        return collection
+    def is_dir(self):
+        return bool(self.children)
 
-
-    def __propagate(self, size):
-        self.size += size
-        if self.parent_dir:
-            self.parent_dir.__propagate(size)
+    def __iter__(self):
+        for child in self.children:
+            for gc in child:
+                yield gc
+            self.size += child.size
+        yield self
 
     def __repr__(self) -> str:
-        if self.parent_dir is None:
-            return self.name
-        return os.path.join(repr(self.parent_dir), self.name)
+        name = (
+            self.name
+            if self.parent_dir is None
+            else os.path.join(repr(self.parent_dir), self.name)
+        )
+        return f"{name} ({self.size})" if self.size else name
 
 
 def solution(path, max_size):
     with open(path) as fh:
         cur_dir = None
         for line in fh.readlines():
-            # print(f"1=> {cur_dir}")
-            # print(f"2=> {line.strip()}")
-            # print("")
             words = [word.strip() for word in line.split(" ")]
             if words[0] == "$":
                 mode = words[1]
                 if mode == "cd":
                     if words[2] == "/":
                         if cur_dir is None:
-                            cur_dir = Elt("/")
+                            cur_dir = FileElt("/")
                         else:
                             assert False  # doesn't happen in the input
                     elif words[2] == "..":
@@ -79,12 +77,13 @@ def solution(path, max_size):
     # get to /
     while cur_dir.parent_dir:
         cur_dir = cur_dir.parent_dir
-    return sum(cur_dir.get_total_under(max_size))
+
+    return sum(map(lambda elt: elt.size, filter(lambda elt: elt.is_dir() and elt.size <= g_max_size, cur_dir)))
 
 
-max_size = 100000
-
-_t = solution("sample.txt", max_size)
+_t = solution("sample.txt", g_max_size)
 assert _t == 95437, _t
 print("Ok")
-print(solution("input.txt", max_size))
+_t = solution("input.txt", g_max_size)
+assert _t == 1886043, _t
+print(_t)
