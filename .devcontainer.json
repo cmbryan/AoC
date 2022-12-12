@@ -12,7 +12,8 @@
 				"almenon.arepl",
 				"njqdev.vscode-python-typehint",
 				"Mukundan.python-docs",
-				"graykode.ai-docstring"
+				"graykode.ai-docstring",
+				"donjayamanne.python-environment-manager"
 			]
 		}
 	}
