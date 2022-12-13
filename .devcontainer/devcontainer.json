@@ -1,6 +1,16 @@
 {
 	"name": "AoC22",
-	"image": "python:3.11-bullseye",
+    // Need to pre-build for network access from within corporate VPN:
+    // see https://github.com/microsoft/vscode-remote-release/issues/3545
+    "initializeCommand": [
+        "docker",
+        "build",
+        "--network=host",
+        "--tag", "aos22:local",
+		"."
+    ],
+    // then we load the image we just built
+	"image": "aos22:local",
 	"runArgs": [
 		"--net", "host"
 	],
