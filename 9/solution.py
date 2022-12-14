@@ -53,7 +53,7 @@ def parse_input(path):
                 yield (Direction[direction])
 
 
-def solution(path):
+def solution_part1(path):
     head = Knot()
     tail = Knot()
     tail_visited = set()
@@ -64,7 +64,23 @@ def solution(path):
     return len(tail_visited)
 
 
-_t = solution('sample.txt')
+def solution_part2(path):
+    knots = [Knot() for _ in range(10)]
+    tail_visited = set()
+    for head_command in parse_input(path):
+        knots[0].move(head_command)
+        for ix, knot in list(enumerate(knots))[1:]:
+            knot.follow(knots[ix-1])
+        tail_visited.add(copy(knots[-1]))
+    return len(tail_visited)
+
+
+_t = solution_part1("sample.txt")
 assert _t == 13, _t
 print("Ok")
-print(f"Part 1 => {solution('input.txt')}")
+print(f"Part 1 => {solution_part1('input.txt')}")
+
+_t = solution_part2("sample2.txt")
+assert _t == 36, _t
+print("Ok")
+print(f"Part 2 => {solution_part2('input.txt')}")
