@@ -27,10 +27,10 @@ class Knot:
     def follow(self, other):
         if abs(other.x - self.x) > 1:
             self.x += (other.x - self.x) // 2
-            self.y += other.y - self.y
+            self.y += max(min(other.y - self.y, 1), -1)
         elif abs(other.y - self.y) > 1:
             self.y += (other.y - self.y) // 2
-            self.x += other.x - self.x
+            self.x += max(min(other.x - self.x, 1), -1)
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -64,14 +64,34 @@ def solution_part1(path):
     return len(tail_visited)
 
 
-def solution_part2(path):
+def solution_part2(path, debug_view=False):
     knots = [Knot() for _ in range(10)]
+    rng_x = [0, 0]
+    rng_y = [0, 0]
     tail_visited = set()
-    for head_command in parse_input(path):
+    for cmd_ix, head_command in enumerate(parse_input(path)):
         knots[0].move(head_command)
         for ix, knot in list(enumerate(knots))[1:]:
-            knot.follow(knots[ix-1])
+            knot.follow(knots[ix - 1])
         tail_visited.add(copy(knots[-1]))
+
+        if debug_view:
+            # Debug view
+            rng_x[0] = min(rng_x[0], knots[0].x)
+            rng_y[0] = min(rng_y[0], knots[0].y)
+            rng_x[1] = max(rng_x[1], knots[0].x)
+            rng_y[1] = max(rng_y[1], knots[0].y)
+            print("=" * 10 + str(cmd_ix + 1))
+            for y in reversed(range(rng_y[0], rng_y[1] + 1)):
+                for x in range(rng_x[0], rng_x[1] + 1):
+                    ch = "."
+                    for k_ix, knot in enumerate(knots):
+                        if knot.x == x and knot.y == y:
+                            ch = k_ix
+                    print(ch, end="")
+                print("")
+            pass
+
     return len(tail_visited)
 
 
@@ -83,4 +103,4 @@ print(f"Part 1 => {solution_part1('input.txt')}")
 _t = solution_part2("sample2.txt")
 assert _t == 36, _t
 print("Ok")
-print(f"Part 2 => {solution_part2('input.txt')}")
+print(f"Part 2 => {solution_part2('input.txt', True)}")
