@@ -1,14 +1,15 @@
 import re
-from typing import List, Set
+from typing import List, Set, Tuple
 
 
 class Item:
-    def __init__(self, worry_level):
-        self.worry_level: int = worry_level
-        self.factors: Set[int] = set()
+    def __init__(self, initial_level):
+        self.initial_level = initial_level
+        # Keep a separate modulo sum for each monkey
+        self.worry_level_mods: Tuple[int] = None
 
     def __repr__(self):
-        return f"{self.worry_level} - {self.factors}"
+        return repr(self.worry_level_mods)
 
 
 class Monkey:
@@ -38,7 +39,7 @@ class Monkey:
 
 
 def parse_input(path):
-    monkeys = []
+    monkeys: List[Monkey] = []
     with open(path) as fh:
         items_re = re.compile(r"\W+Starting items: (.*)")
         op_re = re.compile(r"\W+Operation: new = old (.) (.*)")
@@ -63,26 +64,36 @@ def parse_input(path):
                 monkey.throw_true = int(throw_true_re.match(line)[1])
             elif mode == 5:
                 monkey.throw_false = int(throw_false_re.match(line)[1])
+
+    # Initialize a separate modulo sum for each monkey
+    for monkey in monkeys:
+        for item in monkey.items:
+            item.worry_level_mods = tuple(item.initial_level % _m.test_div_by for _m in monkeys)
     return monkeys
 
 
 def solution(path, n_rounds):
     monkeys: List[Monkey] = parse_input(path)
     for _ in range(n_rounds):
-        pass
-        for monkey in monkeys:
+        for monkey_ix, monkey in enumerate(monkeys):
             for item in monkey.items:
+                # Update the modulo sums for each monkey for each item
                 if monkey.operator == "*":
-                    item.factors.add(monkey.operand)
-                    item.worry_level = 0
+                    if monkey.operand == "old":
+                        item.worry_level_mods = \
+                           [(worry_level*worry_level) % monkeys[m_ix].test_div_by \
+                            for m_ix, worry_level in enumerate(item.worry_level_mods)]
+                    else:
+                        item.worry_level_mods = \
+                           [(worry_level*int(monkey.operand)) % monkeys[m_ix].test_div_by \
+                            for m_ix, worry_level in enumerate(item.worry_level_mods)]
                 else:
                     assert monkey.operator == "+"
-                    item.worry_level += int(monkey.operand)
+                    item.worry_level_mods = \
+                       [(worry_level + int(monkey.operand)) % monkeys[m_ix].test_div_by \
+                        for m_ix, worry_level in enumerate(item.worry_level_mods)]
 
-                if (
-                    monkey.test_div_by in item.factors
-                    and item.worry_level % monkey.test_div_by == 0
-                ):
+                if item.worry_level_mods[monkey_ix] == 0:
                     monkeys[monkey.throw_true].items.append(item)
                 else:
                     monkeys[monkey.throw_false].items.append(item)
@@ -96,7 +107,8 @@ def solution(path, n_rounds):
     return monkeys[-1].num_inspected * monkeys[-2].num_inspected
 
 
-_t = solution("../sample.txt", 10000)
+n_rounds=10000
+_t = solution("../sample.txt", n_rounds)
 assert _t == 2713310158, _t
 print("Ok")
-print(f"Part 2 => {solution('../input.txt')}")
+print(f"Part 2 => {solution('../input.txt', n_rounds)}")
