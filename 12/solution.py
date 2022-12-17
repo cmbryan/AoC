@@ -1,4 +1,5 @@
 from copy import copy
+import numpy as np
 
 
 def parse_input(path):
@@ -15,49 +16,42 @@ def parse_input(path):
                 end = (row_ix, col_ix)
                 grid[row_ix][col_ix] = "z"
             grid[row_ix][col_ix] = ord(grid[row_ix][col_ix])
-    return grid, start, end
+    return np.array(grid), start, end
 
 
 def solution(filepath):
     grid, start, end = parse_input(filepath)
-    paths = [[start]]
-    while True:
-        updated_paths = []
-        print(f"{len(paths)} paths of length {len(paths[0])}")
-        for path in paths:
-            cur = path[-1]
-            # branches
-            proposed = [
-                (cur[0], cur[1] - 1),  # up
-                (cur[0], cur[1] + 1),  # down
-                (cur[0] - 1, cur[1]),  # left
-                (cur[0] + 1, cur[1]),  # right
-            ]
-            for prop in proposed:
-                if (
-                    prop[0] >= 0
-                    and prop[0] < len(grid)
-                    and prop[1] >= 0
-                    and prop[1] < len(grid[0])
-                    and prop not in path
-                    and grid[prop[0]][prop[1]] - grid[cur[0]][cur[1]] <= 1
-                ):
-                    # optimization: check whether this position exists in any path
-                    for p2 in paths:
-                        try:
-                            p2ix = p2.index(prop)
-                            if p2ix < len(path):
-                                break  # We're already covering this path in a better way
-                        except ValueError:
-                            continue  # not in list
-                    else:
-                        updated_paths.append(copy(path) + [prop])
+    lengths = np.full(grid.shape, fill_value=-1)
+    lengths[*start] = 0
+    cursors = [start]
+    while cursors:
+        # pop
+        cur = cursors[-1]
+        cursors = cursors[:-1]
 
-        # Check for winner
-        for path in updated_paths:
-            if path[-1] == end:
-                return len(path) - 1  # Not counting the start
-        paths = updated_paths
+        # branches
+        proposed = [
+            (cur[0] + 1, cur[1]),  # right
+            (cur[0], cur[1] - 1),  # up
+            (cur[0], cur[1] + 1),  # down
+            (cur[0] - 1, cur[1]),  # left
+        ]
+        for prop in proposed:
+            prop_len = lengths[*cur] + 1
+            if (
+                prop[0] >= 0
+                and prop[0] < len(grid)
+                and prop[1] >= 0
+                and prop[1] < len(grid[0])
+                and (lengths[*prop] > prop_len or lengths[*prop] == -1)
+                and grid[*prop] - grid[*cur] <= 1
+            ):
+                lengths[*prop] = prop_len
+                cursors.append(prop)
+
+    assert cur
+    result = lengths[end]
+    return result
 
 
 _t = solution("sample.txt")
