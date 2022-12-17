@@ -23,6 +23,7 @@ def solution(filepath):
     paths = [[start]]
     while True:
         updated_paths = []
+        print(f"{len(paths)} paths of length {len(paths[0])}")
         for path in paths:
             cur = path[-1]
             # branches
@@ -41,8 +42,16 @@ def solution(filepath):
                     and prop not in path
                     and grid[prop[0]][prop[1]] - grid[cur[0]][cur[1]] <= 1
                 ):
-                    # optimization: could check whether this position exists in any path
-                    updated_paths.append(copy(path) + [prop])
+                    # optimization: check whether this position exists in any path
+                    for p2 in paths:
+                        try:
+                            p2ix = p2.index(prop)
+                            if p2ix < len(path):
+                                break  # We're already covering this path in a better way
+                        except ValueError:
+                            continue  # not in list
+                    else:
+                        updated_paths.append(copy(path) + [prop])
 
         # Check for winner
         for path in updated_paths:
