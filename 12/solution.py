@@ -49,14 +49,26 @@ def solution(filepath):
                 lengths[*prop] = prop_len
                 cursors.append(prop)
 
-    assert cur
-    result = lengths[start]
-    return result
+    part1 = lengths[start]
+    part2 = min(
+        map(
+            lambda idx_and_len: idx_and_len[1],
+            filter(
+                lambda idx_and_len: (grid.reshape(-1)[idx_and_len[0]] == 97 and idx_and_len[1] > 0),
+                enumerate(lengths.reshape(-1)),
+            ),
+        )
+    )
+    return part1, part2
 
 
-_t = solution("sample.txt")
-assert _t == 31, _t
+_t1, _t2 = solution("sample.txt")
+assert _t1 == 31, _t1
+assert _t2 == 29, _t2
 print("Ok")
-_a = solution("input.txt")
-assert _a == 383, _t
-print(f"Part 1 => {_a}")
+
+_a1, _a2 = solution("input.txt")
+assert _a1 == 383, _a1
+
+print(f"Part 1 => {_a1}")
+print(f"Part 2 => {_a2}")
