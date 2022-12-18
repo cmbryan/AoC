@@ -41,7 +41,7 @@ def solution(path):
                 break
 
 
-test_part1 = solution("sample.txt")
+test_part1 = solution("../sample.txt")
 assert test_part1 == 24, test_part1
-answer_part1 = solution("input.txt")
+answer_part1 = solution("../input.txt")
 print(f"Part 1 => {answer_part1}")
