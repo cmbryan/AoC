@@ -22,8 +22,8 @@ def parse_input(path):
 def solution(filepath):
     grid, start, end = parse_input(filepath)
     lengths = np.full(grid.shape, fill_value=-1)
-    lengths[*start] = 0
-    cursors = [start]
+    lengths[*end] = 0
+    cursors = [end]
     while cursors:
         # pop
         cur = cursors[-1]
@@ -44,17 +44,19 @@ def solution(filepath):
                 and prop[1] >= 0
                 and prop[1] < len(grid[0])
                 and (lengths[*prop] > prop_len or lengths[*prop] == -1)
-                and grid[*prop] - grid[*cur] <= 1
+                and grid[*prop] - grid[*cur] >= -1
             ):
                 lengths[*prop] = prop_len
                 cursors.append(prop)
 
     assert cur
-    result = lengths[end]
+    result = lengths[start]
     return result
 
 
 _t = solution("sample.txt")
 assert _t == 31, _t
 print("Ok")
-print(f"Part 1 => {solution('input.txt')}")
+_a = solution("input.txt")
+assert _a == 383, _t
+print(f"Part 1 => {_a}")
