@@ -39,17 +39,38 @@ def parse_input(path) -> Tuple[List[Sensor], Tuple[int, int]]:
 
 def solution(path, tgt_y):
     sensors, beacons, x_bounds = parse_input(path)
-    num_covered = 0
-    for x in range(*x_bounds):
-        if (x, tgt_y) in beacons:
+
+    ranges = set()
+    for s in sensors:
+        covers = s.covers - abs(s.coord[1] - tgt_y)
+        if covers < 0:
             continue
-        is_covered = False
-        for s in sensors:
-            if abs(s.coord[0] - x) + abs(s.coord[1] - tgt_y) <= s.covers:
-                is_covered = True
-                break
-        if is_covered:
-            num_covered += 1
+        new_range = (s.coord[0] - covers, s.coord[0] + covers + 1)
+        ranges.add(new_range)
+
+    while True:
+        ranges = sorted(list(ranges))
+        idx1, idx2 = 0, 1
+        simple_ranges = set()
+        updated = False
+        while idx1 < len(ranges) - 1:
+            idx2 = idx1 + 1
+            while idx2 < len(ranges) and ranges[idx1][1] >= ranges[idx2][0]:
+                idx2 += 1
+                updated = True
+            new_range = (
+                min(ranges[idx1][0], ranges[idx2 - 1][0]),
+                max(ranges[idx1][1], ranges[idx2 - 1][1]),
+            )
+            simple_ranges.add(new_range)
+            idx1 = idx2 + 1
+        if updated:
+            ranges = simple_ranges
+        else:
+            break
+
+    num_covered = sum(map(lambda r: r[1] - r[0], ranges))
+    num_covered -= len(list(filter(lambda b: b[1] == tgt_y, beacons)))
     return num_covered
 
 
