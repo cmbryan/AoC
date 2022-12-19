@@ -74,8 +74,8 @@ def solution(path, tgt_y):
     return num_covered
 
 
-test_answer = solution("sample.txt", 10)
+test_answer = solution("../sample.txt", 10)
 assert test_answer == 26, test_answer
 print("Ok")
 
-print(f"Part 1 => {solution('input.txt', 2000000)}")
+print(f"Part 1 => {solution('../input.txt', 2000000)}")
