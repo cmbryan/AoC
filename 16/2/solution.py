@@ -81,12 +81,10 @@ def best_path(
         opened[cur_nodes[0]] = True
         opened[cur_nodes[1]] = True
         score = best_path(nodes, cur_nodes, opened, time_remaining)
-        max_score = max(
-            max_score,
-            score
-            + nodes[cur_nodes[0]].rate * time_remaining
-            + nodes[cur_nodes[1]].rate * time_remaining
-        )
+        score += nodes[cur_nodes[0]].rate * time_remaining
+        if cur_nodes[0] != cur_nodes[1]:
+            score += nodes[cur_nodes[1]].rate * time_remaining
+        max_score = max(max_score, score)
         opened[cur_nodes[0]] = False
         opened[cur_nodes[1]] = False
 
@@ -98,9 +96,9 @@ nodes = parse_input("../sample.txt")
 CACHE = {}
 test_answer = best_path(nodes, ["AA", "AA"])
 assert test_answer == 1707, test_answer
-# print("Ok")
-#
-# nodes = parse_input("../input.txt")
-# CACHE = {}
-# part2 = best_path(nodes, ["AA", "AA"])
-# print(f"Part 2 => {part2}")
+print("Ok")
+
+nodes = parse_input("../input.txt")
+CACHE = {}
+part2 = best_path(nodes, ["AA", "AA"])
+print(f"Part 2 => {part2}")
