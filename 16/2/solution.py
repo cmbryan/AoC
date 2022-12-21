@@ -48,13 +48,13 @@ def best_path(
 
     max_score = 0
 
-    # Option 1: don't open, don't open
+    # Option 1: move, move
     for n1 in nodes[cur_nodes[0]].tunnels:
         for n2 in nodes[cur_nodes[1]].tunnels:
             score = best_path(nodes, [n1, n2], opened, time_remaining)
             max_score = max(max_score, score)
 
-    # Option 2: open, don't open
+    # Option 2: open, move
     if not opened[cur_nodes[0]] and nodes[cur_nodes[0]].rate > 0:
         opened[cur_nodes[0]] = True
         for node in nodes[cur_nodes[1]].tunnels:
@@ -64,7 +64,7 @@ def best_path(
             )
         opened[cur_nodes[0]] = False
 
-    # Option 3: don't open, open
+    # Option 3: move, open
     if not opened[cur_nodes[1]] and nodes[cur_nodes[1]].rate > 0:
         opened[cur_nodes[1]] = True
         for node in nodes[cur_nodes[0]].tunnels:
@@ -96,7 +96,6 @@ def best_path(
 
 nodes = parse_input("../sample.txt")
 CACHE = {}
-# test_answer = best_path(nodes, ["AA", "AA"], time_remaining=4)
 test_answer = best_path(nodes, ["AA", "AA"])
 assert test_answer == 1707, test_answer
 # print("Ok")
