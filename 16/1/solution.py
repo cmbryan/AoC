@@ -32,9 +32,9 @@ def best_path(
     time_remaining=30,
 ):
     global CACHE
-    time_remaining -= 1  # time remaining after the *next* move
-    if time_remaining < 0:
+    if time_remaining <= 0:
         return 0
+    time_remaining -= 1  # time remaining after the *next* action
 
     # current node, time remaining, opened valves
     cache_key = (
@@ -45,27 +45,22 @@ def best_path(
     if cache_key in CACHE:
         return CACHE[cache_key]
 
-    max_score_a, max_score_b = 0, 0
+    max_score = 0
 
     # Option A: move without opening
     for node in nodes[cur_node].tunnels:
-        best_a = best_path(nodes, node, opened, time_remaining)
-        if best_a > max_score_a:
-            max_score_a = best_a
+        score = best_path(nodes, node, opened, time_remaining)
+        max_score = max(max_score, score)
 
     # Option B: open before moving
     if not opened[cur_node] and nodes[cur_node].rate > 0:
         opened[cur_node] = True
-        for node in nodes[cur_node].tunnels:
-            best_b = best_path(nodes, node, opened, time_remaining - 1)
-            if best_b > max_score_b:
-                max_score_b = best_b
+        score = best_path(nodes, cur_node, opened, time_remaining)
+        max_score = max(max_score, score + nodes[cur_node].rate * time_remaining)
         opened[cur_node] = False
-        max_score_b = max_score_b + nodes[cur_node].rate * time_remaining
 
-    score = max(max_score_a, max_score_b)
-    CACHE[cache_key] = score
-    return score
+    CACHE[cache_key] = max_score
+    return max_score
 
 
 nodes = parse_input("../sample.txt")
@@ -78,3 +73,4 @@ nodes = parse_input("../input.txt")
 CACHE = {}
 part1 = best_path(nodes, "AA", time_remaining=30)
 print(f"Part 1 => {part1}")
+assert part1 == 1820, part1
