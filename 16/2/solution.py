@@ -23,6 +23,7 @@ def parse_input(path):
 
 
 CACHE: Dict[Tuple[str, str, int], int] = {}
+HITS = MISSES = 0
 
 
 def best_path(
@@ -31,9 +32,10 @@ def best_path(
     opened: List[str] = [],
     time_remaining=26
 ):
-    global CACHE
     if time_remaining <= 0:
         return 0
+    global CACHE#, HITS, MISSES
+
     time_remaining -= 1
     cur_nodes = sorted(cur_nodes)
 
@@ -43,8 +45,12 @@ def best_path(
         time_remaining,
         tuple(opened),
     )
+    # if MISSES%1000000==0:
+    #     print(f"{HITS}/{MISSES}")
     if cache_key in CACHE:
+        # HITS += 1
         return CACHE[cache_key]
+    # MISSES += 1
 
     max_score = 0
 
