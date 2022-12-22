@@ -28,8 +28,8 @@ CACHE: Dict[Tuple[str, str, int], int] = {}
 def best_path(
     nodes: Dict[str, Node],
     cur_nodes: List[str],
-    opened: DefaultDict[str, bool] = defaultdict(lambda: False),
-    time_remaining=26,
+    opened: List[str] = [],
+    time_remaining=26
 ):
     global CACHE
     if time_remaining <= 0:
@@ -41,7 +41,7 @@ def best_path(
     cache_key = (
         tuple(cur_nodes),
         time_remaining,
-        "".join(list(filter(lambda n: opened[n], opened.keys()))),
+        tuple(opened),
     )
     if cache_key in CACHE:
         return CACHE[cache_key]
@@ -55,38 +55,41 @@ def best_path(
             max_score = max(max_score, score)
 
     # Option 2: open, move
-    if not opened[cur_nodes[0]] and nodes[cur_nodes[0]].rate > 0:
-        opened[cur_nodes[0]] = True
+    if not cur_nodes[0] in opened and nodes[cur_nodes[0]].rate > 0:
         for node in nodes[cur_nodes[1]].tunnels:
-            score = best_path(nodes, [cur_nodes[0], node], opened, time_remaining)
+            score = best_path(
+                nodes,
+                [cur_nodes[0], node],
+                sorted(opened + [cur_nodes[0]]),
+                time_remaining,
+            )
             max_score = max(
                 max_score, score + nodes[cur_nodes[0]].rate * time_remaining
             )
-        opened[cur_nodes[0]] = False
 
     # Option 3: move, open
-    if not opened[cur_nodes[1]] and nodes[cur_nodes[1]].rate > 0:
-        opened[cur_nodes[1]] = True
+    if not cur_nodes[1] in opened and nodes[cur_nodes[1]].rate > 0:
         for node in nodes[cur_nodes[0]].tunnels:
-            score = best_path(nodes, [node, cur_nodes[1]], opened, time_remaining)
+            score = best_path(
+                nodes,
+                [node, cur_nodes[1]],
+                sorted(opened + [cur_nodes[1]]),
+                time_remaining,
+            )
             max_score = max(
                 max_score, score + nodes[cur_nodes[1]].rate * time_remaining
             )
-        opened[cur_nodes[1]] = False
 
     # Option 4: open, open
-    if (not opened[cur_nodes[0]] and nodes[cur_nodes[0]].rate > 0) and (
-        not opened[cur_nodes[1]] and nodes[cur_nodes[1]].rate > 0
+    if (not cur_nodes[0] in opened and nodes[cur_nodes[0]].rate > 0) and (
+        not cur_nodes[1] in opened and nodes[cur_nodes[1]].rate > 0
     ):
-        opened[cur_nodes[0]] = True
-        opened[cur_nodes[1]] = True
-        score = best_path(nodes, cur_nodes, opened, time_remaining)
+        both_opened = sorted(opened + cur_nodes)
+        score = best_path(nodes, cur_nodes, both_opened, time_remaining)
         score += nodes[cur_nodes[0]].rate * time_remaining
         if cur_nodes[0] != cur_nodes[1]:
             score += nodes[cur_nodes[1]].rate * time_remaining
         max_score = max(max_score, score)
-        opened[cur_nodes[0]] = False
-        opened[cur_nodes[1]] = False
 
     CACHE[cache_key] = max_score
     return max_score
